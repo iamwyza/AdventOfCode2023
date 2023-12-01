@@ -1,17 +1,13 @@
-﻿using System.Diagnostics;
-
-namespace AdventOfCode2023;
+﻿namespace AdventOfCode2023;
 internal struct Coord
 {
-
     public int X;
-
 
     public int Y;
 
     public Coord()
     {
-
+        X = 0; Y = 0;
     }
 
     public Coord(int x, int y)

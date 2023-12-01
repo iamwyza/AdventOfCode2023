@@ -30,7 +30,7 @@ while (choice != "0")
 
     AnsiConsole.Clear();
 
-    var input = choice?.Split('-', 2).Select(int.Parse).ToArray();
+    var input = choice.Split('-', 2).Select(int.Parse).ToArray();
 
     if (input![1] == 1)
     {
