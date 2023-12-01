@@ -39,8 +39,14 @@ public abstract class DayBase : IDay
 
     public async Task<string[]> GetLines()
     {
-        return await File.ReadAllLinesAsync($"Day{Day}\\day{Day}input.txt");
+        return await File.ReadAllLinesAsync($"Day{Day:00}\\day{Day}input.txt");
     }
+
+    public async Task<string[]> GetTestLines(int part)
+    {
+        return await File.ReadAllLinesAsync($"Day{Day:00}\\day{Day}.{part}testinput.txt");
+    }
+
 
     public abstract Task RunPart1();
     public abstract Task RunPart2();

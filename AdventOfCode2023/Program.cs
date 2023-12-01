@@ -18,7 +18,7 @@ while (choice != "0")
     }
     prompt.AddChoices("0")
     .AddChoices(DayBase.Days.Keys.OrderByDescending(x => x)
-        .SelectMany(x => new string[] { x + "-" + 1, x + "-" + 2 }).ToArray());
+        .SelectMany(x => new[] { x + "-" + 1, x + "-" + 2 }).ToArray());
 
 
     choice = AnsiConsole.Prompt(
@@ -32,7 +32,7 @@ while (choice != "0")
 
     var input = choice.Split('-', 2).Select(int.Parse).ToArray();
 
-    if (input![1] == 1)
+    if (input[1] == 1)
     {
         await DayBase.Days[input[0]].RunPart1();
     }
