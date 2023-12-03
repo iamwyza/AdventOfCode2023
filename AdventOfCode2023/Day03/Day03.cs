@@ -258,7 +258,7 @@ internal class Day03 : DayBase
 
         _map.PrintMap((x, coord) =>
         {
-            if (!(IsNumber(x) || x == '.'))
+            if (x == '*')
                 return (x, Color.Red, null);
 
             if (outputMap[coord])
