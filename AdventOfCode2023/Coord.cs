@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode2023;
+﻿using System.Text;
+
+namespace AdventOfCode2023;
 internal struct Coord
 {
     public int X;
@@ -110,7 +112,7 @@ internal class Grid<T> where T : struct, IComparable, IComparable<T>
     //  return new Coord { X = x, Y = y, XOffset = XOffset, YOffset = YOffset};
     //}
 
-    public Func<T, (char letter, Color color)> DefaultPrintConfig { get; set; } = (input) => ('.', Color.Default);
+    public Func<T, Coord, (char letter, Color color, string? extraText)> DefaultPrintConfig { get; set; } = (input, _) => ('.', Color.Default, string.Empty);
 
     public void InitMap()
     {
@@ -167,8 +169,51 @@ internal class Grid<T> where T : struct, IComparable, IComparable<T>
             Bounds.minY = coord.Y;
     }
 
+    
+    public bool AdjacentTest(Func<T, bool> test, Coord coord, [NotNullWhen(true)]  out Coord[]? adjacentCoords)
+    {
+        Coord upperLeft = new Coord(coord.X - 1, coord.Y - 1);
+        Coord upperCenter = new Coord(coord.X, coord.Y - 1);
+        Coord upperRight = new Coord(coord.X + 1, coord.Y - 1);
+        Coord left = new Coord(coord.X - 1, coord.Y);
+        Coord right = new Coord(coord.X + 1, coord.Y);
+        Coord lowerLeft = new Coord(coord.X - 1, coord.Y + 1);
+        Coord lowerCenter = new Coord(coord.X, coord.Y + 1);
+        Coord lowerRight = new Coord(coord.X + 1, coord.Y + 1);
 
-    public void PrintMap(Func<T, (char letter, Color color)>? config = null, bool printRowLabel = false, bool printEmptyRow = true, int yMin = 0, int yMax = 0)
+        bool result = false;
+
+        var temp = new List<Coord>();
+
+        result |= CheckAndAdd(upperLeft);
+        result |= CheckAndAdd(upperCenter);
+        result |= CheckAndAdd(upperRight);
+        result |= CheckAndAdd(left);
+        result |= CheckAndAdd(right);
+        result |= CheckAndAdd(lowerLeft);
+        result |= CheckAndAdd(lowerCenter);
+        result |= CheckAndAdd(lowerRight);
+
+        if (result)
+            adjacentCoords = temp.ToArray();
+
+        return result;
+
+        bool CheckAndAdd(Coord coord)
+        {
+            if (InBounds(coord) && test(this[coord]))
+            {
+                temp.Add(coord);
+                return true;
+            }
+
+            return false;
+        }
+
+    }
+
+
+    public void PrintMap(Func<T, Coord, (char letter, Color color, string? extraText)>? config = null, bool printRowLabel = false, bool printEmptyRow = true, int yMin = 0, int yMax = 0)
     {
         config ??= DefaultPrintConfig;
 
@@ -193,14 +238,15 @@ internal class Grid<T> where T : struct, IComparable, IComparable<T>
             if (printEmptyRow || hasData && ((yMin == 0 && yMax == 0) || (yRow >= yMin && yRow <= yMax)))
             {
                 if (printRowLabel)
-                    AnsiConsole.Markup($"{yRow:0000;-000}");
-
+                    AnsiConsole.Markup($"{yRow:0000;-000} ");
+                var stringBuilder = new StringBuilder();
                 for (int xCol = Bounds.minX; xCol <= Bounds.maxX; xCol++)
                 {
-                    var setting = config(Map[xCol, yRow]);
+                    var setting = config(Map[xCol, yRow], new Coord(xCol, yRow));
 
-                    AnsiConsole.Markup($"[{setting.color.ToMarkup()}]{setting.letter}[/]");
+                    stringBuilder.Append($"[{setting.color.ToMarkup()}]{setting.letter}[/]");
                 }
+                AnsiConsole.MarkupInterpolated($"{stringBuilder} [yellow]{config(Map[0, yRow], new Coord(0, yRow)).extraText}[/]");
                 Console.WriteLine();
             }
         }

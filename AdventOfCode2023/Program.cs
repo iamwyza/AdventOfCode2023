@@ -34,11 +34,25 @@ while (choice != "0")
 
     if (input[1] == 1)
     {
-        await DayBase.Days[input[0]].RunPart1();
+        try
+        {
+            await DayBase.Days[input[0]].RunPart1().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.WriteException(ex);
+        }
     }
     else
     {
-        await DayBase.Days[input[0]].RunPart2();
+        try
+        {
+            await DayBase.Days[input[0]].RunPart2().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.WriteException(ex);
+        }
     }
 
     Console.WriteLine();
