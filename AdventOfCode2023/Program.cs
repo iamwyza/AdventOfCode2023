@@ -36,7 +36,7 @@ while (choice != "0")
     {
         try
         {
-            await DayBase.Days[input[0]].RunPart1().ConfigureAwait(true);
+            await DayBase.Days[input[0]].RunPart1().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -47,7 +47,7 @@ while (choice != "0")
     {
         try
         {
-            await DayBase.Days[input[0]].RunPart2().ConfigureAwait(true);
+            await DayBase.Days[input[0]].RunPart2().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
