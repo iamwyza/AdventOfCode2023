@@ -4,7 +4,7 @@ internal class Day19 : DayBase
     private Grid<sbyte> _map;
 
     [MemberNotNull(nameof(_map))]
-    private async Task Init()
+    private async Task Init(int part, bool useTestData)
     {
         _map = new Grid<sbyte>();
 
@@ -23,12 +23,12 @@ internal class Day19 : DayBase
     public override async Task RunPart1()
     {
         PrintStart(1);
-        await Init();
+        await Init(1, true);
     }
 
     public override async Task RunPart2()
     {
         PrintStart(2);
-        await Init();
+        await Init(2, true);
     }
 }

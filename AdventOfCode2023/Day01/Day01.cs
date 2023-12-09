@@ -9,7 +9,7 @@ internal class Day01 : DayBase
 
     private List<int> numbers = new();
 
-    private async Task Init()
+    private async Task Init(int part, bool useTestData)
     {
         numbers.Clear();
         
@@ -18,7 +18,7 @@ internal class Day01 : DayBase
     public override async Task RunPart1()
     {
         PrintStart(1);
-        await Init();
+        await Init(1, true);
         var lines = await GetLines();
         Regex regex = new Regex(@"(\d)");
         foreach (var line in lines)
@@ -49,7 +49,7 @@ internal class Day01 : DayBase
     public override async Task RunPart2()
     {
         PrintStart(2);
-        await Init();
+        await Init(1, true);
 
         var lines = await GetLines();
         Regex reverseRegex = new Regex(@"(\d|eno|owt|eerht|ruof|evif|xis|neves|thgie|enin)");
