@@ -117,6 +117,12 @@ internal class Day10 : DayBase
 
     }
 
+
+    // This comes close but does not solve part 2.  The problem lies in the below requirement.
+    // Right now this will properly find all the internal paths that are blocked off, but doesn't handle this part:
+
+    // "In fact, there doesn't even need to be a full tile path to the outside for tiles to count as outside the loop - squeezing between pipes is also allowed! Here, I is still within the loop and O is still outside the loop:"
+    
     public override async Task RunPart2()
     {
         PrintStart(2);
@@ -200,8 +206,6 @@ internal class Day10 : DayBase
         }
 
         // overlayMap.PrintMap(null, true);
-        List<Dictionary<Coord, bool>> thisIsDumb = new();
-
         var allVisitedNodesA = new Dictionary<Coord, bool>();
 
         InitVisitedNodes(ref allVisitedNodesA);
@@ -214,57 +218,13 @@ internal class Day10 : DayBase
             }
         }
 
-        thisIsDumb.Add(allVisitedNodesA);
-
-        //var allVisitedNodesB = new Dictionary<Coord, bool>();
-        //InitVisitedNodes(ref allVisitedNodesB);
-
-        //for (int y = overlayMap.Bounds.maxY; y >= 0; y--)
-        //{
-        //    for (int x = overlayMap.Bounds.maxX; x >= 0; x--)
-        //    {
-        //        EvaluateTouchingCoords(new Coord(x, y), allVisitedNodesB);
-        //    }
-        //}
-
-        //thisIsDumb.Add(allVisitedNodesB);
-
-        //var allVisitedNodesC = new Dictionary<Coord, bool>();
-        //InitVisitedNodes(ref allVisitedNodesC);
-
-
-        //for (int y = 0; y <= overlayMap.Bounds.maxY; y++)
-        //{
-        //    for (int x = overlayMap.Bounds.maxX; x >= 0; x--)
-        //    {
-        //        EvaluateTouchingCoords(new Coord(x, y), allVisitedNodesC);
-        //    }
-        //}
-
-        //thisIsDumb.Add(allVisitedNodesC);
-
-        //var allVisitedNodesD = new Dictionary<Coord, bool>();
-
-        //InitVisitedNodes(ref allVisitedNodesD);
-
-
-        //for (int y = overlayMap.Bounds.maxY; y >= 0; y--)
-        //{
-        //    for (int x = 0; x <= overlayMap.Bounds.maxX; x++)
-        //    {
-        //        EvaluateTouchingCoords(new Coord(x, y), allVisitedNodesD);
-        //    }
-        //}
-
-        //thisIsDumb.Add(allVisitedNodesD);
-
 
         int numberOfSpots = 0;
         for (int y = 0; y <= overlayMap.Bounds.maxY; y++)
         {
             for (int x = 0; x <= overlayMap.Bounds.maxX; x++)
             {
-                if (thisIsDumb.All(z => z[new Coord(x, y)] == false))
+                if (allVisitedNodesA[new Coord(x, y)] == false)
                     if (!_map[x, y].isConnected)
                     {
                         _map[x, y] = (Direction.Special, false);
