@@ -1,7 +1,7 @@
 ﻿using System.Text;
 
 namespace AdventOfCode2023;
-internal struct Coord
+internal struct Coord : IEqualityComparer<Coord>
 {
     public int X;
 
@@ -23,6 +23,15 @@ internal struct Coord
         return String.Format($"{X},{Y}");
     }
 
+    public bool Equals(Coord x, Coord y)
+    {
+        return x.X == y.X && x.Y == y.Y;
+    }
+
+    public int GetHashCode(Coord obj)
+    {
+        return HashCode.Combine(obj.X, obj.Y);
+    }
 }
 
 internal class Grid<T> where T : struct, IComparable, IComparable<T>
@@ -170,7 +179,7 @@ internal class Grid<T> where T : struct, IComparable, IComparable<T>
     }
 
     
-    public bool AdjacentTest(Func<T, bool> test, Coord coord, [NotNullWhen(true)]  out Coord[]? adjacentCoords)
+    public bool AdjacentTest(Func<T, bool> test, Coord coord, bool cardinalOnly, [NotNullWhen(true)]  out Coord[]? adjacentCoords)
     {
         Coord upperLeft = new Coord(coord.X - 1, coord.Y - 1);
         Coord upperCenter = new Coord(coord.X, coord.Y - 1);
@@ -185,25 +194,28 @@ internal class Grid<T> where T : struct, IComparable, IComparable<T>
 
         var temp = new List<Coord>();
 
-        result |= CheckAndAdd(upperLeft);
+        if (!cardinalOnly)
+        {
+            result |= CheckAndAdd(upperLeft);
+            result |= CheckAndAdd(upperRight);
+            result |= CheckAndAdd(lowerLeft);
+            result |= CheckAndAdd(lowerRight);
+        }
+
         result |= CheckAndAdd(upperCenter);
-        result |= CheckAndAdd(upperRight);
         result |= CheckAndAdd(left);
         result |= CheckAndAdd(right);
-        result |= CheckAndAdd(lowerLeft);
         result |= CheckAndAdd(lowerCenter);
-        result |= CheckAndAdd(lowerRight);
 
-        if (result)
-            adjacentCoords = temp.ToArray();
+        adjacentCoords = result ? temp.ToArray() : null;
 
         return result;
 
-        bool CheckAndAdd(Coord coord)
+        bool CheckAndAdd(Coord coordToCheck)
         {
-            if (InBounds(coord) && test(this[coord]))
+            if (InBounds(coordToCheck) && test(this[coordToCheck]))
             {
-                temp.Add(coord);
+                temp.Add(coordToCheck);
                 return true;
             }
 

@@ -64,7 +64,7 @@ internal class Day03 : DayBase
                     currentNumber.Append(_map[x, y]);
                     if (!isTouchingSymbol) // If we already know it's touching a symbol, we don't need to check anymore for this number
                     {
-                        if (_map.AdjacentTest((c) => !(IsNumber(c) || c == '.'), new Coord(x, y), out Coord[]? _))
+                        if (_map.AdjacentTest((c) => !(IsNumber(c) || c == '.'), new Coord(x, y), false, out Coord[]? _))
                         {
                             isTouchingSymbol = true;
                         }
@@ -164,7 +164,7 @@ internal class Day03 : DayBase
                     currentNumber.Append(_map[x, y]);
                     if (!isTouchingSymbol) // If we already know it's touching a symbol, we don't need to check anymore for this number
                     {
-                        if (_map.AdjacentTest((c) => c == '*', new Coord(x, y), out Coord[]? adjacentCoords))
+                        if (_map.AdjacentTest((c) => c == '*', new Coord(x, y), false, out Coord[]? adjacentCoords))
                         {
                             isTouchingSymbol = true;
                             adjacentGearCoordinate = adjacentCoords[0];

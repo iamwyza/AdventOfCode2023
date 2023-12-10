@@ -8,7 +8,7 @@ internal class Day24 : DayBase
     {
         _map = new Grid<sbyte>();
 
-        var lines = await GetLines();
+        var lines = useTestData ? await GetTestLines(part) : await GetLines();
 
         foreach (var line in lines)
         {
