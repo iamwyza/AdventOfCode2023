@@ -34,7 +34,7 @@ internal class Day10 : DayBase
                     Direction.NorthWest => 'J',
                     Direction.SouthWest => '7',
                     Direction.SouthEast => 'F',
-                    Direction.None => '.',
+                    Direction.None => ' ',
                     Direction.Special => 'S',
                 }
                 , input.isConnected ? Color.Green : Color.Default
@@ -72,8 +72,8 @@ internal class Day10 : DayBase
     {
         PrintStart(1);
         await Init(1, false);
-        (Coord nextATile, Direction lastADirection) = FindFirstStep(_startCoord, new Coord(-1, -1));
-        (Coord nextBTile, Direction lastBDirection) = FindFirstStep(_startCoord, nextATile);
+        (Coord nextATile, Direction lastADirection) = FindFirstStep(_map, _startCoord, new Coord(-1, -1));
+        (Coord nextBTile, Direction lastBDirection) = FindFirstStep(_map, _startCoord, nextATile);
 
         var tileA = _map[nextATile];
         tileA.isConnected = true;
@@ -89,8 +89,8 @@ internal class Day10 : DayBase
         {
             steps++;
 
-            (Coord tempA, Direction nextADirection) = FindNextStep(nextATile, lastADirection);
-            (Coord tempB, Direction nextBDirection) = FindNextStep(nextBTile, lastBDirection);
+            (Coord tempA, Direction nextADirection) = FindNextStep(_map, nextATile, lastADirection);
+            (Coord tempB, Direction nextBDirection) = FindNextStep(_map, nextBTile, lastBDirection);
 
             lastADirection = nextADirection;
             nextATile = tempA;
@@ -118,28 +118,79 @@ internal class Day10 : DayBase
     }
 
 
-    // This comes close but does not solve part 2.  The problem lies in the below requirement.
-    // Right now this will properly find all the internal paths that are blocked off, but doesn't handle this part:
-
-    // "In fact, there doesn't even need to be a full tile path to the outside for tiles to count as outside the loop - squeezing between pipes is also allowed! Here, I is still within the loop and O is still outside the loop:"
-    
     public override async Task RunPart2()
     {
         PrintStart(2);
         await Init(2, false);
 
-        (Coord nextATile, Direction lastADirection) = FindFirstStep(_startCoord, new Coord(-1, -1));
-        (Coord nextBTile, Direction lastBDirection) = FindFirstStep(_startCoord, nextATile);
+        var tempMap = new Grid<(Direction direction, bool isConnected)>();
+        tempMap.CheckBounds(new Coord(_map.Bounds.maxX*2 + 4, _map.Bounds.maxY*2 + 4));
+        tempMap.InitMap();
 
-        var tileA = _map[nextATile];
+        int yOffset = 2;
+        for (int y = 0; y <= _map.Bounds.maxY; y++)
+        {
+            int xOffset = 2;
+            for (int x = 0; x <= _map.Bounds.maxX; x++)
+            {
+                tempMap[x+xOffset,y+yOffset] = _map[x,y];
+
+                if (_map[x, y].direction == Direction.Special)
+                    _startCoord = new Coord(x + xOffset, y + yOffset);
+
+                xOffset++;
+                tempMap[x + xOffset, y + yOffset] = (Direction.None, false);
+
+                
+            }
+
+            yOffset++;
+        }
+
+        tempMap.DefaultPrintConfig = _map.DefaultPrintConfig;
+        tempMap.PrintMap();
+
+        for (int y = 1; y < tempMap.Bounds.maxY; y++)
+        {
+            for (int x = 1; x < tempMap.Bounds.maxX-1; x++)
+            {
+                if (tempMap[x, y - 1].direction is Direction.SouthEast or Direction.NorthSouth or Direction.SouthWest or Direction.Special
+                    && tempMap[x, y + 1].direction is Direction.NorthEast or Direction.NorthWest 
+                        or Direction.NorthSouth or Direction.Special)
+                    tempMap[x, y] = (Direction.NorthSouth, false);
+
+            }
+        }
+
+        for (int x = 1; x < tempMap.Bounds.maxX - 1; x++)
+        {
+            for (int y = 1; y < tempMap.Bounds.maxY; y++)
+            {
+                if (tempMap[x-1, y].direction is Direction.NorthEast or Direction.SouthEast or Direction.EastWest or Direction.Special
+                    && tempMap[x+1, y].direction is Direction.NorthWest or Direction.SouthWest
+                        or Direction.EastWest or Direction.Special)
+                    tempMap[x, y] = (Direction.EastWest, false);
+
+            }
+        }
+
+        tempMap.PrintMap();
+        
+
+        (Coord nextATile, Direction lastADirection) = FindFirstStep(tempMap, _startCoord, new Coord(-1, -1));
+        (Coord nextBTile, Direction lastBDirection) = FindFirstStep(tempMap, _startCoord, nextATile);
+
+        var tileA = tempMap[nextATile];
         tileA.isConnected = true;
-        _map[nextATile] = tileA;
+        tempMap[nextATile] = tileA;
 
-        var tileB = _map[nextBTile];
+        var tileB = tempMap[nextBTile];
         tileB.isConnected = true;
-        _map[nextBTile] = tileB;
+        tempMap[nextBTile] = tileB;
 
-        _map.DefaultPrintConfig = ((Direction Direction, bool isConnected) input, Coord coord) =>
+        
+
+        tempMap.DefaultPrintConfig = ((Direction Direction, bool isConnected) input, Coord coord) =>
         {
             if (input.isConnected)
             {
@@ -166,32 +217,32 @@ internal class Day10 : DayBase
         };
 
         int steps = 1;
-        while (true)
+        while (true && steps < 1_000_000)
         {
             steps++;
 
-            (Coord tempA, Direction nextADirection) = FindNextStep(nextATile, lastADirection);
-            (Coord tempB, Direction nextBDirection) = FindNextStep(nextBTile, lastBDirection);
+            (Coord tempA, Direction nextADirection) = FindNextStep(tempMap, nextATile, lastADirection);
+            (Coord tempB, Direction nextBDirection) = FindNextStep(tempMap, nextBTile, lastBDirection);
 
             lastADirection = nextADirection;
             nextATile = tempA;
-            tileA = _map[tempA];
+            tileA = tempMap[tempA];
             tileA.isConnected = true;
-            _map[tempA] = tileA;
+            tempMap[tempA] = tileA;
 
             lastBDirection = nextBDirection;
             nextBTile = tempB;
-            tileB = _map[tempB];
+            tileB = tempMap[tempB];
             tileB.isConnected = true;
-            _map[tempB] = tileB;
+            tempMap[tempB] = tileB;
 
             if (tempA.Equals(tempB))
                 break;
-            //_map.PrintMap();
+            //tempMap.PrintMap();
         }
 
         var overlayMap = new Grid<bool>();
-        overlayMap.CheckBounds(new Coord(_map.Bounds.maxX, _map.Bounds.maxY));
+        overlayMap.CheckBounds(new Coord(tempMap.Bounds.maxX, tempMap.Bounds.maxY));
         overlayMap.InitMap();
 
         overlayMap.DefaultPrintConfig = (touchesEdge, location) =>
@@ -201,86 +252,95 @@ internal class Day10 : DayBase
         {
             for (int x = 0; x <= overlayMap.Bounds.maxX; x++)
             {
-                overlayMap[x, y] = _map[x, y].isConnected;
+                overlayMap[x, y] = tempMap[x, y].isConnected;
             }
         }
 
         // overlayMap.PrintMap(null, true);
-        var allVisitedNodesA = new Dictionary<Coord, bool>();
+        var allVisitedNodes = new Dictionary<Coord, bool>();
 
-        InitVisitedNodes(ref allVisitedNodesA);
+        InitVisitedNodes(ref allVisitedNodes);
 
-        for (int y = 0; y <= overlayMap.Bounds.maxY; y++)
+        Queue<Coord> toEvaluate = new Queue<Coord>();
+        toEvaluate.Enqueue(new Coord(1, 1));
+
+        while (toEvaluate.Count > 0)
         {
-            for (int x = 0; x <= overlayMap.Bounds.maxX; x++)
-            {
-                EvaluateTouchingCoords(new Coord(x, y), allVisitedNodesA);
-            }
+            EvaluateTouchingCoords();
+
         }
 
-
-        int numberOfSpots = 0;
         for (int y = 0; y <= overlayMap.Bounds.maxY; y++)
         {
             for (int x = 0; x <= overlayMap.Bounds.maxX; x++)
             {
-                if (allVisitedNodesA[new Coord(x, y)] == false)
-                    if (!_map[x, y].isConnected)
+                var coord = new Coord(x, y);
+                if (allVisitedNodes.ContainsKey(coord) && allVisitedNodes[coord] == false)
+                    if (!tempMap[coord].isConnected)
                     {
-                        _map[x, y] = (Direction.Special, false);
-                        numberOfSpots++;
+                        tempMap[coord] = (Direction.Special, false);
                     }
+                if (!allVisitedNodes.ContainsKey(coord) && !tempMap[coord].isConnected)
+                {
+                    tempMap[coord] = (Direction.Special, false);
+                }
             }
         }
 
+        overlayMap.PrintMap();
+
+        tempMap.PrintMap();
+
+        var finalMap = new Grid<(Direction direction, bool isConnected)>();
+        finalMap.CheckBounds(new Coord((tempMap.Bounds.maxX/2), (tempMap.Bounds.maxY/2)));
+        finalMap.InitMap();
+        finalMap.PrintMap();
+        int numberOfSpots = 0;
+
+        for (int y = 0; y <= tempMap.Bounds.maxY; y += 2)
+        {
+            for (int x = 0; x <= tempMap.Bounds.maxX; x += 2)
+            {
+                if (!tempMap[x, y].isConnected && tempMap[x, y].direction == Direction.Special)
+                    numberOfSpots++;
+
+                finalMap[x/2, y/2] = tempMap[x, y];
+            }
+        }
+
+        finalMap.DefaultPrintConfig = _map.DefaultPrintConfig;
+        finalMap.PrintMap();
 
 
-        overlayMap.PrintMap(null, true);
 
-        _map.PrintMap(null, false);
 
         AnsiConsole.MarkupLineInterpolated($"Number of ground spots is [green]{numberOfSpots}[/]");
 
-        (bool, Coord[]? adjacentCoords) EvaluateTouchingCoords(Coord input, Dictionary<Coord, bool> visitedNodes)
+
+        void EvaluateTouchingCoords()
         {
+            var input = toEvaluate.Dequeue();
+            if (allVisitedNodes.ContainsKey(input)) return;
+            //if (input.X == 5 && input.Y == 3) Debugger.Break();
 
-            if (visitedNodes.ContainsKey(input))
-                return (visitedNodes[input], null);
-            //if (input.X == 3 && input.Y == 7) Debugger.Break();
-
-            if (overlayMap!.AdjacentTest(isConnected => !isConnected, input, true,
+            if (overlayMap.AdjacentTest(isConnected => !isConnected, input, true,
                     out Coord[]? adjacentCoords))
             {
                 bool reachedEdge = false;
-                List<Coord[]> nestedAdjacentCoords = new List<Coord[]>();
 
-                if (adjacentCoords is not null)
-                {
-                    nestedAdjacentCoords.Add(adjacentCoords);
-                }
-
-                visitedNodes.Add(input, false);
+                allVisitedNodes.Add(input, false);
                 foreach (var adjacentCoord in adjacentCoords)
                 {
-                    var temp = EvaluateTouchingCoords(adjacentCoord, visitedNodes);
-                    reachedEdge |= temp.Item1;
-                    if (temp.adjacentCoords is not null)
-                        nestedAdjacentCoords.Add(temp.adjacentCoords);
+                    toEvaluate.Enqueue(adjacentCoord);
+                    if (allVisitedNodes.ContainsKey(adjacentCoord))
+                        reachedEdge |= allVisitedNodes[adjacentCoord];
                 }
 
-                var allAdjacentCoords = nestedAdjacentCoords.SelectMany(x => x).ToArray();
-                foreach (var adjacentCoord in allAdjacentCoords)
-                {
-                    visitedNodes[adjacentCoord] = reachedEdge;
-                }
-                visitedNodes[input] = reachedEdge;
-                return (reachedEdge, allAdjacentCoords);
+                allVisitedNodes[input] = reachedEdge;
+                return;
             }
 
-
-            visitedNodes.Add(input, false);
-            return (false, null);
-
+            allVisitedNodes.Add(input, false);
         }
 
         void InitVisitedNodes(ref Dictionary<Coord, bool> visitedNodes)
@@ -300,9 +360,9 @@ internal class Day10 : DayBase
 
 
 
-    (Coord, Direction) FindNextStep(Coord currentLocation, Direction lastDirection)
+    (Coord, Direction) FindNextStep(Grid<(Direction direction, bool isConnected)> map, Coord currentLocation, Direction lastDirection)
     {
-        var currentDirection = _map[currentLocation].direction;
+        var currentDirection = map[currentLocation].direction;
 
         var tempX = currentLocation.X;
         var tempY = currentLocation.Y;
@@ -360,7 +420,7 @@ internal class Day10 : DayBase
     }
 
 
-    (Coord, Direction) FindFirstStep(Coord currentLocation, Coord skipCoord)
+    (Coord, Direction) FindFirstStep(Grid<(Direction direction, bool isConnected)> map, Coord currentLocation, Coord skipCoord)
     {
         var westCoord = new Coord(currentLocation.X - 1, currentLocation.Y);
         var eastCoord = new Coord(currentLocation.X + 1, currentLocation.Y);
@@ -369,29 +429,29 @@ internal class Day10 : DayBase
 
         // West / Left
         if (!westCoord.Equals(skipCoord)
-            && _map.InBounds(westCoord)
-            && _map[westCoord].direction is Direction.EastWest or Direction.NorthEast or Direction.SouthEast)
+            && map.InBounds(westCoord)
+            && map[westCoord].direction is Direction.EastWest or Direction.NorthEast or Direction.SouthEast)
         {
             return (westCoord, Direction.West);
         }
 
         if (!eastCoord.Equals(skipCoord)
-            && _map.InBounds(eastCoord)
-            && _map[eastCoord].direction is Direction.EastWest or Direction.NorthWest or Direction.SouthWest)
+            && map.InBounds(eastCoord)
+            && map[eastCoord].direction is Direction.EastWest or Direction.NorthWest or Direction.SouthWest)
         {
             return (eastCoord, Direction.East);
         }
 
         if (!northCoord.Equals(skipCoord)
-            && _map.InBounds(northCoord)
-            && _map[northCoord].direction is Direction.NorthSouth or Direction.SouthEast or Direction.SouthWest)
+            && map.InBounds(northCoord)
+            && map[northCoord].direction is Direction.NorthSouth or Direction.SouthEast or Direction.SouthWest)
         {
             return (northCoord, Direction.North);
         }
 
         if (!southCoord.Equals(skipCoord)
-            && _map.InBounds(southCoord)
-            && _map[southCoord].direction is Direction.NorthSouth or Direction.NorthEast or Direction.NorthWest)
+            && map.InBounds(southCoord)
+            && map[southCoord].direction is Direction.NorthSouth or Direction.NorthEast or Direction.NorthWest)
         {
             return (southCoord, Direction.South);
         }
