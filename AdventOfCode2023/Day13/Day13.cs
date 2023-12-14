@@ -9,16 +9,13 @@ internal class Day13 : DayBase
     public Day13()
     {
         Ready = true;
-        _maps = new();
         _maps2 = new();
     }
 
-    private List<Grid<bool>> _maps;
-    private List<(int[] rows, int[] columns)> _maps2;
+    private readonly List<(int[] rows, int[] columns)> _maps2;
 
     private async Task Init(int part, bool useTestData)
     {
-        _maps.Clear();
         _maps2.Clear();
 
         var lines = useTestData ? await GetTestLines(part) : await GetLines();
@@ -30,38 +27,7 @@ internal class Day13 : DayBase
         {
             if (string.IsNullOrEmpty(line))
             {
-                var map = new Grid<bool>
-                {
-                    DefaultPrintConfig = defaultConfig
-                };
-
-                var rows = buffer.Select(x => Convert.ToInt32(x.Replace("#", "1").Replace(".", "0"), 2)).ToArray();
-                int[] columns = new int[buffer[0].Length];
-
-                for (int x = 0; x < buffer[0].Length; x++)
-                {
-                    var stringBuilder = new StringBuilder();
-                    foreach (var bLine in buffer)
-                    {
-                        stringBuilder.Append(bLine[x]);
-                    }
-
-                    columns[x] = Convert.ToInt32(stringBuilder.ToString().Replace("#", "1").Replace(".", "0"), 2);
-
-                }
-
-                map.CheckBounds(new Coord(buffer[0].Length-1, buffer.Count-1));
-                map.InitMap();
-                for (int y = 0; y < buffer.Count; y++)
-                {
-                    for (int x = 0; x < buffer[y].Length; x++)
-                    {
-                        map[x, y] = buffer[y][x] == '#';
-                    }
-                }
-                _maps2.Add((rows, columns));
-                _maps.Add(map);
-                buffer.Clear();
+               AddMap();
             }
             else
             {
@@ -69,38 +35,28 @@ internal class Day13 : DayBase
             }
         }
 
-        var tmap = new Grid<bool>
-        {
-            DefaultPrintConfig = defaultConfig
-        };
-        tmap.CheckBounds(new Coord(buffer[0].Length, buffer.Count - 1));
-        tmap.InitMap();
-        for (int y = 0; y < buffer.Count; y++)
-        {
-            for (int x = 0; x < buffer[y].Length; x++)
-            {
-                tmap[x, y] = buffer[y][x] == '#';
-            }
-        }
+        AddMap();
 
-        var rows2 = buffer.Select(x => Convert.ToInt32(x.Replace("#", "1").Replace(".", "0"), 2)).ToArray();
-        int[] columns2 = new int[buffer[0].Length];
-
-        for (int x = 0; x < buffer[0].Length; x++)
+        void AddMap()
         {
-            var stringBuilder = new StringBuilder();
-            foreach (var bLine in buffer)
+            var rows = buffer.Select(x => Convert.ToInt32(x.Replace("#", "1").Replace(".", "0"), 2)).ToArray();
+            int[] columns = new int[buffer[0].Length];
+
+            for (int x = 0; x < buffer[0].Length; x++)
             {
-                stringBuilder.Append(bLine[x]);
+                var stringBuilder = new StringBuilder();
+                foreach (var bLine in buffer)
+                {
+                    stringBuilder.Append(bLine[x]);
+                }
+
+                columns[x] = Convert.ToInt32(stringBuilder.ToString().Replace("#", "1").Replace(".", "0"), 2);
+
             }
 
-            columns2[x] = Convert.ToInt32(stringBuilder.ToString().Replace("#", "1").Replace(".", "0"), 2);
-
+            _maps2.Add((rows, columns));
+            buffer.Clear();
         }
-        _maps.Add(tmap);
-        _maps2.Add((rows2, columns2));
-
-       
     }
 
     public override async Task RunPart1()
@@ -109,12 +65,10 @@ internal class Day13 : DayBase
         await Init(1, false);
         var total = 0;
 
-        for (var index = 0; index < _maps2.Count; index++)
+        foreach (var set in _maps2)
         {
-            var set = _maps2[index];
             AnsiConsole.WriteLine(string.Join(" ", set.columns));
             AnsiConsole.WriteLine(string.Join(" ", set.rows));
-            _maps[index].PrintMap();
 
             var mirroredAtRow = CalculateMirrors(set.rows) * 100;
             var mirroredAtColumn = CalculateMirrors(set.columns);
@@ -186,12 +140,6 @@ internal class Day13 : DayBase
             var excludingRow = CalculateMirrors(set.rows, true, -1);
             var excludingColumn = CalculateMirrors(set.columns, false, -1);
 
-            if (excludingColumn > 0)
-                excludingColumn--;
-
-            if (excludingRow > 0)
-                excludingRow--;
-
             for (int i = 0; i < set.rows.Length; i++)
             {
                 
@@ -202,14 +150,15 @@ internal class Day13 : DayBase
                     rows[i] ^= (1 << b);
 
                     mirroredAtRow = CalculateMirrors(rows, true, excludingRow);
-                    if (mirroredAtRow > 0)
+                    if (mirroredAtRow >= 0)
                     {
+                        mirroredAtRow++;
                         Print((rows, set.columns), i, b);
                         break;
                     }
                 }
 
-                if (mirroredAtRow > 0)
+                if (mirroredAtRow >= 0)
                 {
                     break;
                 }
@@ -228,21 +177,22 @@ internal class Day13 : DayBase
 
                         mirroredAtColumn = CalculateMirrors(cols, false, excludingColumn);
 
-                        if (mirroredAtColumn > 0)
+                        if (mirroredAtColumn >= 0)
                         {
+                            mirroredAtColumn++;
                             Print((set.rows, cols), b, i);
                             break;
                         }
                     }
 
-                    if (mirroredAtColumn > 0)
+                    if (mirroredAtColumn >= 0)
                     {
                         break;
                     }
                 }
             }
 
-            if (mirroredAtColumn <= 0 && mirroredAtRow <= 0)
+            if (mirroredAtColumn < 0 && mirroredAtRow < 0)
             {
                 Debugger.Break();
             }
@@ -254,14 +204,13 @@ internal class Day13 : DayBase
                 mirroredAtRow = 0;
 
             total += mirroredAtColumn + (mirroredAtRow * 100);
-            Console.WriteLine(total);
         }
 
         AnsiConsole.MarkupLineInterpolated($"Total is [green]{total}[/]");
 
         void Print((int[] rows, int[] columns) set, int highlightRow, int highlightBit)
         {
-            Console.WriteLine();
+            AnsiConsole.WriteLine();
             for (var index = 0; index < set.rows.Length; index++)
             {
                 var row = set.rows[index];
@@ -279,7 +228,7 @@ internal class Day13 : DayBase
                                        );
             }
 
-            Console.WriteLine();
+            AnsiConsole.WriteLine();
 
             for (var index = 0; index < set.columns.Length; index++)
             {
@@ -292,7 +241,7 @@ internal class Day13 : DayBase
                 );
             }
 
-            Console.WriteLine();
+            AnsiConsole.WriteLine();
         }
 
         int CalculateMirrors(int[] rowOrCol, bool isRow, int excludeRow)
@@ -335,7 +284,7 @@ internal class Day13 : DayBase
                     if (excludeRow != -1)
                         AnsiConsole.MarkupLineInterpolated($"Mirrored [red]{(isRow ? "row" : "col")}[/] between [yellow]{row + 1}[/] and [yellow]{row + 2}[/]");
 
-                    return row + 1;
+                    return row;
                 }
             }
 
