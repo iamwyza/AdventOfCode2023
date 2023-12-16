@@ -14,22 +14,10 @@ internal class Day16 : DayBase
     [MemberNotNull(nameof(_map))]
     private async Task Init(int part, bool useTestData)
     {
-        _map = new Grid<char>();
 
         var lines = useTestData ? await GetTestLines(part) : await GetLines();
-        _map.CheckBounds(new Coord(lines[0].Length-1, lines.Length-1));
-        _map.InitMap();
-        _map.DefaultPrintConfig = (c, coord) => (c, Color.Default, null);
-
-        for (var y = 0; y < lines.Length; y++)
-        {
-            var line = lines[y];
-            for (int x = 0; x < lines[y].Length; x++)
-            {
-                _map[x, y] = line[x];
-            }
-        }
-
+        
+        _map = new Grid<char>(lines, (c) => c);
 
         _map.PrintMap(null, true, true);
     }
@@ -238,13 +226,10 @@ internal class Day16 : DayBase
         //energizedMap.PrintMap();
 
         var total = 0;
-        for (int y = 0; y <= energizedMap.Bounds.maxY; y++)
+        foreach (var cell in energizedMap)
         {
-            for (int x = 0; x <= energizedMap.Bounds.maxX; x++)
-            {
-                if (energizedMap[x, y] > 0)
-                    total++;
-            }
+            if (cell.Item2 > 0)
+                total++;
         }
 
         return total;

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections;
+using System.Text;
 
 namespace AdventOfCode2023;
 internal struct Coord : IEqualityComparer<Coord>
@@ -34,7 +35,7 @@ internal struct Coord : IEqualityComparer<Coord>
     }
 }
 
-internal class Grid<T> where T : struct, IComparable, IComparable<T>
+internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : struct, IComparable, IComparable<T>
 {
 
     public T this[Coord index]
@@ -105,6 +106,25 @@ internal class Grid<T> where T : struct, IComparable, IComparable<T>
         return y + YOffset;
     }
 
+    public Grid()
+    {
+
+    }
+
+    public Grid(string[] lines, Func<char, T> converter)
+    {
+        CheckBounds(new Coord(lines[0].Length - 1, lines.Length - 1));
+        InitMap();
+
+        for (var y = 0; y < lines.Length; y++)
+        {
+            var line = lines[y];
+            for (int x = 0; x < lines[y].Length; x++)
+            {
+                this[x, y] = converter(line[x]);
+            }
+        }
+    }
 
     public bool CanWrapY = false;
     public bool CanWrapX = false;
@@ -121,7 +141,7 @@ internal class Grid<T> where T : struct, IComparable, IComparable<T>
     //  return new Coord { X = x, Y = y, XOffset = XOffset, YOffset = YOffset};
     //}
 
-    public Func<T, Coord, (char letter, Color color, string? extraText)> DefaultPrintConfig { get; set; } = (input, _) => ('.', Color.Default, string.Empty);
+    public Func<T, Coord, (char letter, Color color, string? extraText)> DefaultPrintConfig { get; set; } = (input, _) => (input is char c ? c : input.ToString()[0], Color.Default, string.Empty);
 
     public void InitMap()
     {
@@ -264,5 +284,21 @@ internal class Grid<T> where T : struct, IComparable, IComparable<T>
         }
 
         Console.WriteLine();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    public IEnumerator<(Coord, T)> GetEnumerator()
+    {
+        for (int y = 0; y <= Bounds.maxY; y++)
+        {
+            for (int x = 0; x <= Bounds.maxX; x++)
+            {
+                yield return (new Coord(x,y), this[x, y]);
+            }
+        }
     }
 }
