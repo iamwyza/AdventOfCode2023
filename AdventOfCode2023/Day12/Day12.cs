@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Diagnostics;
+using System.Numerics;
 using System.Text;
 
 namespace AdventOfCode2023.Day12;
@@ -24,22 +27,22 @@ internal class Day12 : DayBase
             _records.Add((temp[0].ToCharArray(), groups));
         }
 
-        
+
     }
 
     public override async Task RunPart1()
     {
         PrintStart(1);
-        await Init(1, false);
+        await Init(1, true);
         int totalArrangements = 0;
         int line = 0;
 
         //var regexClass = new Day11Data.TestData() as DataMatch;
-        var regexClass = new Day11Data.Data() as DataMatch;
-
+        //var regexClass = new Day11Data.Data() as DataMatch;
+        
         foreach (var (conditions, groups) in _records)
         {
-            
+
             //var tstring = string.Join("", groups.Take(groups.Length-1).Select(x => "[#]{" + x + "}\\.+"));
 
             //var rstring = @"^\.*" + tstring + "[#]{" + groups.Last() + "}\\.*$";
@@ -48,7 +51,7 @@ internal class Day12 : DayBase
 
             var numberOfPlaceholders = conditions.Count(x => x == '?');
 
-            var permutations = (-1*((Int32.MaxValue  << numberOfPlaceholders) | Int32.MinValue));
+            var permutations = (-1 * ((Int32.MaxValue << numberOfPlaceholders) | Int32.MinValue));
 
             //AnsiConsole.WriteLine($"Mask :{permutations}         {Convert.ToString(permutations, toBase: 2).PadLeft(numberOfPlaceholders, '0')}");
             //AnsiConsole.WriteLine($"[GeneratedRegex(@\"{rstring}\", RegexOptions.IgnoreCase, \"en-US\")] private static partial Regex Line{line++}();");
@@ -71,15 +74,15 @@ internal class Day12 : DayBase
                     attempt[index] = replacement == '1' ? '#' : '.';
                 }
 
-             
 
 
-                if (regexClass.IsMatch(line, new string(attempt)))
-                {
-                    totalMatches++;
-                    //AnsiConsole.MarkupLineInterpolated($"[yellow]{rstring}[/] against [red]{new string(attempt)}[/] has [green]{matches.Count}[/] matches.");
 
-                }
+                //if (regexClass.IsMatch(line, new string(attempt)))
+                //{
+                //    totalMatches++;
+                //    //AnsiConsole.MarkupLineInterpolated($"[yellow]{rstring}[/] against [red]{new string(attempt)}[/] has [green]{matches.Count}[/] matches.");
+
+                //}
 
 
             }
@@ -102,19 +105,21 @@ internal class Day12 : DayBase
     public override async Task RunPart2()
     {
         PrintStart(2);
-        await Init(2, true);
+        await Init(2, false);
         int totalArrangements = 0;
         //var regexClass = new Day11Data.TestData() as DataMatch;
-        var regexClass = new Day11Data.Data() as DataMatch;
-
+        //var regexClass = new Day11Data.Data() as DataMatch;
         var line = 0;
         foreach (var (c, g) in _records)
         {
-            int[] groups =
-                g.Concat(g)
+            //if (line == 1) break;
+
+            int[] groups = g
+                .Concat(g)
                     .Concat(g)
                     .Concat(g)
-                    .Concat(g).ToArray();
+                    .Concat(g)
+                    .ToArray();
 
             char[] conditions = c
                 .Concat(new[] { '?' }).Concat(c)
@@ -129,10 +134,17 @@ internal class Day12 : DayBase
 
             //var regex = new Regex(rstring, RegexOptions.Compiled);
 
-            var numberOfPlaceholders = conditions.Count(x => x == '?');
+            var conditionsBeforeCollapsing = new string(conditions);
+            while (conditionsBeforeCollapsing.Contains(".."))
+                conditionsBeforeCollapsing = conditionsBeforeCollapsing.Replace("..", ".");
 
-            var permutations = (-1 * ((long.MaxValue << numberOfPlaceholders) | long.MinValue));
-            
+            conditions = conditionsBeforeCollapsing.ToCharArray();
+
+            int numberOfPlaceholders = conditions.Count(x => x == '?');
+
+            var z = -1 * ((long.MaxValue << numberOfPlaceholders) | long.MinValue);
+            ulong permutations = Convert.ToUInt64(z);
+
             //AnsiConsole.WriteLine($"Mask :{permutations}         {Convert.ToString(permutations, toBase: 2).PadLeft(numberOfPlaceholders, '0')}");
             //AnsiConsole.MarkupLineInterpolated($"[yellow]{new string(conditions)}[/]");
             int totalMatches = 0;
@@ -147,48 +159,95 @@ internal class Day12 : DayBase
                 }
             }
 
-            Parallel.ForEach(Range(0L, permutations), new ParallelOptions(){MaxDegreeOfParallelism = 10}, (i) =>
+            var maxAdditionalItems = groups.Sum() - conditions.Count(x => x == '#');
+
+            AnsiConsole.MarkupLineInterpolated($"Attempting [yellow]{new string(conditions)}[/] with groups [yellow]{string.Join(',', groups)}[/] possible solutions [green]{permutations}[/].  A total of [red]{maxAdditionalItems}[/] extra # can be added.");
+            var stopwatch = Stopwatch.StartNew();
+
+            Parallel.ForEach(Range(0L, permutations), new ParallelOptions() { MaxDegreeOfParallelism = 10 }, (i) =>
             {
+                if (BitOperations.PopCount(i) != maxAdditionalItems)
+                    return;
+
                 char[] attempt = new char[conditions.Length];
 
-                 for (int con = 0; con < conditions.Length; con++)
+                for (int con = 0; con < conditions.Length; con++)
                 {
                     attempt[con] = conditions[con];
                 }
 
 
                 //var attempt = (char[])conditions.Clone();
-
-                var t = Convert.ToString(i, toBase: 2).PadLeft(numberOfPlaceholders, '.');
+                //var y = (long)i;
+                // var t = Convert.ToString(y, toBase: 2).PadLeft(numberOfPlaceholders, '.');
 
                 //AnsiConsole.MarkupLineInterpolated($"{i} = {t}");
 
-                var temp2 = 0;
+                var temp2 = 1;
+                //Console.WriteLine(attempt);
                 foreach (var index in replacementLocations)
                 {
-                    attempt[index] = t[temp2++] == '1' ? '#' : '.';
+                    //Console.WriteLine(Convert.ToString(y,2));
+                    var bit = ((long)i & (1 << temp2++ - 1)) != 0;
+                    //Console.WriteLine(Convert.ToString((y & (1 << temp2 - 1)),2).PadLeft(numberOfPlaceholders, '0'));
+                    attempt[index] = bit ? '#' : '.';
                 }
+                //Console.WriteLine(attempt);
 
 
-
-                if (regexClass.IsMatch(line, new string(attempt)))
-                {
-                    Interlocked.Increment(ref totalMatches);
-                    //AnsiConsole.MarkupLineInterpolated($"[yellow]{rstring}[/] against [red]{new string(attempt)}[/] matches.");
-                }
+                //if (regexClass.IsMatch(line, new string(attempt)))
+                //{
+                //    Interlocked.Increment(ref totalMatches);
+                //    //AnsiConsole.MarkupLineInterpolated($"[yellow]{rstring}[/] against [red]{new string(attempt)}[/] matches.");
+                //}
             });
+            stopwatch.Stop();
 
             totalArrangements += totalMatches;
-            AnsiConsole.MarkupLineInterpolated($"Total permutations for [yellow]{new string(conditions)}[/] is [green]{totalMatches}[/]");
+            AnsiConsole.MarkupLineInterpolated($"Total permutations for [yellow]{new string(conditions)}[/] is [green]{totalMatches}[/].  Took [red]{stopwatch.ElapsedMilliseconds / 1000F:N1}[/] seconds at a rate of {permutations / (stopwatch.ElapsedMilliseconds / 1000F):N1} per second.");
             //Console.WriteLine($"MaskedState:   {Convert.ToString((_state & mask) | (value << offset), toBase: 2).PadLeft(64, '0')}");
 
             line++;
         }
 
         AnsiConsole.MarkupLineInterpolated($"There was a total of [green]{totalArrangements}[/] combinations");
+
+
+
+
     }
 
-    public static IEnumerable<long> Range(long fromInclusive, long toExclusive)
+    //private static int GetCombinations(char[] input, int[] groups)
+    //{
+    //    Queue<(char[], int)> queue = new Queue<(char[], int)>();
+    //    // TODO: copy and mutate each branch as we go, discarding branches that aren't possible. should drastically lower the possible combinations....
+
+
+    //    bool Branch(int inputOffset, int groupOffset)
+    //    {
+    //        var groupSize = groups[groupOffset];
+
+    //        for (int i = 0; i < input.Length; i++)
+    //        {
+    //            if (input[i] == '?' || input[i] == '#')
+    //            {
+    //                for (int g = 0; g < groupSize; g++)
+    //                {
+    //                    if (input[i + g] != '?' && input[i] != '#')
+    //                        return false;
+    //                }
+
+    //                if (input[i + groupSize] == '.' || input[i+groupSize] == '?')
+    //                {
+    //                    Branch(i, groupOffset++);
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
+
+
+    public static IEnumerable<ulong> Range(ulong fromInclusive, ulong toExclusive)
     {
         for (var i = fromInclusive; i < toExclusive; i++) yield return i;
     }
