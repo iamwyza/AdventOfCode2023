@@ -1,41 +1,9 @@
 ﻿using System.Collections;
 using System.Text;
 
-namespace AdventOfCode2023;
-internal struct Coord : IEqualityComparer<Coord>
-{
-    public int X;
+namespace AdventOfCode2023.GridUtilities;
 
-    public int Y;
-
-    public Coord()
-    {
-        X = 0; Y = 0;
-    }
-
-    public Coord(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
-
-    public override string ToString()
-    {
-        return String.Format($"{X},{Y}");
-    }
-
-    public bool Equals(Coord x, Coord y)
-    {
-        return x.X == y.X && x.Y == y.Y;
-    }
-
-    public int GetHashCode(Coord obj)
-    {
-        return HashCode.Combine(obj.X, obj.Y);
-    }
-}
-
-internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : struct, IComparable, IComparable<T>
+internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : IComparable
 {
 
     public T this[Coord index]
@@ -89,8 +57,8 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : stru
         if (y + YOffset < 0)
         {
             //if (y == -16188) Debugger.Break();
-            if (y % _yLength != 0) 
-                return (_yLength + (y % _yLength) + YOffset) ;
+            if (y % _yLength != 0)
+                return _yLength + y % _yLength + YOffset;
 
             return YOffset; // Y = 0 + offset
         }
@@ -108,7 +76,14 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : stru
 
     public Grid()
     {
+        CheckBounds(new Coord(0, 0));
+        InitMap();
+    }
 
+    public Grid(int minX, int minY, int maxX, int maxY)
+    {
+        Bounds = (minX, minY, maxX, maxY);
+        InitMap();
     }
 
     public Grid(string[] lines, Func<char, T> converter)
@@ -133,8 +108,11 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : stru
 
     public (int minX, int minY, int maxX, int maxY) Bounds;
 
-    public static int XOffset;
-    public static int YOffset;
+    public int XOffset;
+    public int YOffset;
+
+    public int Rows => Bounds.maxY;
+    public int Columns => Bounds.maxX;
 
     //public Coord MakeCord(int x, int y)
     //{
@@ -143,6 +121,7 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : stru
 
     public Func<T, Coord, (char letter, Color color, string? extraText)> DefaultPrintConfig { get; set; } = (input, _) => (input is char c ? c : input.ToString()[0], Color.Default, string.Empty);
 
+    [MemberNotNull(nameof(Map))]
     public void InitMap()
     {
         Map = new T[Bounds.maxX + 1, Bounds.maxY + 1];
@@ -198,8 +177,24 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : stru
             Bounds.minY = coord.Y;
     }
 
-    
-    public bool AdjacentTest(Func<T, bool> test, Coord coord, bool cardinalOnly, [NotNullWhen(true)]  out Coord[]? adjacentCoords)
+    public Grid<TNewGridType> CopyGrid<TNewGridType>(Func<Coord, T, TNewGridType>? converter = null)
+        where TNewGridType : IComparable
+    {
+        var newGrid = new Grid<TNewGridType>(Bounds.minX, Bounds.minY, Bounds.maxX, Bounds.maxY);
+
+        if (converter != null)
+        {
+            foreach (var (coord, item) in this)
+            {
+                newGrid[coord] = converter(coord, item);
+            }
+        }
+
+        return newGrid;
+    }
+
+
+    public bool AdjacentTest(Func<T, bool> test, Coord coord, bool cardinalOnly, [NotNullWhen(true)] out Coord[]? adjacentCoords)
     {
         Coord upperLeft = new Coord(coord.X - 1, coord.Y - 1);
         Coord upperCenter = new Coord(coord.X, coord.Y - 1);
@@ -267,7 +262,7 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : stru
                 }
             }
 
-            if (printEmptyRow || hasData && ((yMin == 0 && yMax == 0) || (yRow >= yMin && yRow <= yMax)))
+            if (printEmptyRow || hasData && (yMin == 0 && yMax == 0 || yRow >= yMin && yRow <= yMax))
             {
                 if (printRowLabel)
                     AnsiConsole.Markup($"{yRow:0000;-000} ");
@@ -297,8 +292,10 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : stru
         {
             for (int x = 0; x <= Bounds.maxX; x++)
             {
-                yield return (new Coord(x,y), this[x, y]);
+                yield return (new Coord(x, y), this[x, y]);
             }
         }
     }
+
+
 }

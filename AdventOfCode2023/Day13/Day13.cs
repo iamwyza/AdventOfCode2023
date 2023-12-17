@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using AdventOfCode2023.GridUtilities;
 
 namespace AdventOfCode2023.Day13
 ;

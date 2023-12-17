@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode2023.Day00;
+﻿using AdventOfCode2023.GridUtilities;
+
+namespace AdventOfCode2023.Day00;
 internal class Day00 : DayBase
 {
 

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using AdventOfCode2023.GridUtilities;
 using static System.Char;
 
 namespace AdventOfCode2023.Day03;

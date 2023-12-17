@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
+using AdventOfCode2023.GridUtilities;
 
 namespace AdventOfCode2023.Day11
 ;

@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode2023.Day22;
+﻿using AdventOfCode2023.GridUtilities;
+
+namespace AdventOfCode2023.Day22;
 internal class Day22 : DayBase
 {
     private Grid<sbyte> _map;

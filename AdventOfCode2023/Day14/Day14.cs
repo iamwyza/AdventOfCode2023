@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode2023.Day14;
+﻿using AdventOfCode2023.GridUtilities;
+
+namespace AdventOfCode2023.Day14;
 internal class Day14 : DayBase
 {
     public Day14()

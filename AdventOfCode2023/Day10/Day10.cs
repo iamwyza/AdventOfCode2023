@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using AdventOfCode2023.GridUtilities;
 using Spectre.Console.Rendering;
 
 namespace AdventOfCode2023.Day10
