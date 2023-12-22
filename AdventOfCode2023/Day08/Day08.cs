@@ -82,13 +82,13 @@ internal class Day08 : DayBase
         var direction = new ReadOnlySpan<bool>(_pattern);
         int patternCount = direction.Length - 1;
 
-        long lcm = 0;
+        ulong lcm = 0;
 
         for (var i = 0; i < paths.Length; i++)
         {
 
             var atZ = false;
-            long stepCount = 0;
+            ulong stepCount = 0;
 
             while (!atZ)
             {
@@ -119,27 +119,12 @@ internal class Day08 : DayBase
 
             lcm = lcm == 0 
                 ? stepCount 
-                : LeastCommonMultiple(lcm, stepCount);
+                : MathUtils.LeastCommonMultiple(lcm, stepCount);
         }
 
 
         AnsiConsole.MarkupLineInterpolated($"It took [green]{lcm}[/] steps to reach the end for all races at the same time.");
     }
 
-    // Pulled this calculation method from the internet, no, i'm not above asking how to calculate LCM easily.
-    static long GreatestCommonFactor(long a, long b)
-    {
-        while (b != 0)
-        {
-            long temp = b;
-            b = a % b;
-            a = temp;
-        }
-        return a;
-    }
-
-    static long LeastCommonMultiple(long a, long b)
-    {
-        return (a / GreatestCommonFactor(a, b)) * b;
-    }
+    
 }
