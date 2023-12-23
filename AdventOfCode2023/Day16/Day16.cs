@@ -13,7 +13,6 @@ internal class Day16 : DayBase
 
     private Grid<char> _map;
     
-    [MemberNotNull(nameof(_map))]
     private async Task Init(int part, bool useTestData)
     {
 
@@ -113,7 +112,8 @@ internal class Day16 : DayBase
             Direction.East => new Coord(startCoord.X - 1, startCoord.Y),
             Direction.West => new Coord(startCoord.X + 1, startCoord.Y),
             Direction.North => new Coord(startCoord.X, startCoord.Y + 1),
-            Direction.South => new Coord(startCoord.X, startCoord.Y - 1)
+            Direction.South => new Coord(startCoord.X, startCoord.Y - 1),
+            _ => throw new ArgumentOutOfRangeException(nameof(startDirection), startDirection, null)
         };
 
 
@@ -130,7 +130,8 @@ internal class Day16 : DayBase
             Direction.North => '^',
             Direction.East => '>',
             Direction.South => 'v',
-            Direction.West => '<'
+            Direction.West => '<',
+            _ => throw new ArgumentOutOfRangeException()
         } : input, energizedMap[coord] > 0 ? Color.Yellow : Color.Default, null);
         beams.Enqueue((startCoord, startDirection));
         while (beams.Count != 0)
@@ -149,7 +150,8 @@ internal class Day16 : DayBase
                     Direction.East => new Coord(beam.location.X + 1, beam.location.Y),
                     Direction.West => new Coord(beam.location.X - 1, beam.location.Y),
                     Direction.North => new Coord(beam.location.X, beam.location.Y - 1),
-                    Direction.South => new Coord(beam.location.X, beam.location.Y + 1)
+                    Direction.South => new Coord(beam.location.X, beam.location.Y + 1),
+                    _ => throw new ArgumentOutOfRangeException()
                 };
 
 

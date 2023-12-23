@@ -7,9 +7,10 @@ internal class Day08 : DayBase
     public Day08()
     {
         Ready = true;
+        _pattern = Array.Empty<bool>();
     }
 
-    private FrozenDictionary<string, (string left, string right, bool leftEndsWithZ, bool rightEndsWithZ )> _map;
+    private FrozenDictionary<string, (string left, string right, bool leftEndsWithZ, bool rightEndsWithZ )> _map = null!;
     private bool[] _pattern;
 
 

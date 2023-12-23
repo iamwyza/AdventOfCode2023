@@ -24,7 +24,8 @@ internal class Day14 : DayBase
         {
             1 => 'O',
             2 => '#',
-            0 => '.'
+            0 => '.',
+            _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
         }, Color.Default, "");
 
         for (var y = 0; y < lines.Length; y++)
@@ -35,7 +36,8 @@ internal class Day14 : DayBase
                 {
                     'O' => 1,
                     '#' => 2,
-                    '.' => 0
+                    '.' => 0,
+                    _ => throw new ArgumentOutOfRangeException()
                 };
             }
         }

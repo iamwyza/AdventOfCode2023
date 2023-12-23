@@ -119,7 +119,7 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> //where T : IC
     //  return new Coord { X = x, Y = y, XOffset = XOffset, YOffset = YOffset};
     //}
 
-    public Func<T, Coord, (char letter, Color color, string? extraText)> DefaultPrintConfig { get; set; } = (input, _) => (input is char c ? c : input.ToString()[0], Color.Default, string.Empty);
+    public Func<T, Coord, (char letter, Color color, string? extraText)> DefaultPrintConfig { get; set; } = (input, _) => (input is char c ? c : input?.ToString()?[0] ?? ' ', Color.Default, string.Empty);
 
     [MemberNotNull(nameof(Map))]
     public void InitMap()
@@ -254,7 +254,7 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> //where T : IC
             {
                 for (int xCol = Bounds.minX; xCol <= Bounds.maxX; xCol++)
                 {
-                    if (!Map[xCol, yRow].Equals(default(T)))
+                    if (!Map[xCol, yRow]?.Equals(default(T)) ?? false)
                     {
                         hasData = true;
                         break;

@@ -12,7 +12,7 @@ internal class Day01 : DayBase
     private async Task Init(int part, bool useTestData)
     {
         numbers.Clear();
-        
+        await Task.CompletedTask;
     }
 
     public override async Task RunPart1()

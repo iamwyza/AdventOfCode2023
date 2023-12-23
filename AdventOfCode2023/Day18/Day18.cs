@@ -31,7 +31,7 @@ internal class Day18 : DayBase
         {
             var temp = line.Split(' ');
 
-            Direction direction = Direction.None;
+            Direction direction;
             ulong amount = 0;
 
             if (part == 1)
@@ -41,7 +41,8 @@ internal class Day18 : DayBase
                     "R" => Direction.East,
                     "L" => Direction.West,
                     "U" => Direction.North,
-                    "D" => Direction.South
+                    "D" => Direction.South,
+                    _ => throw new ArgumentOutOfRangeException()
                 };
                  amount = Convert.ToUInt64(temp[1]);
             }
@@ -53,7 +54,8 @@ internal class Day18 : DayBase
                     '0' => Direction.East,
                     '1' => Direction.South,
                     '2' => Direction.West,
-                    '3' => Direction.North
+                    '3' => Direction.North,
+                    _ => throw new ArgumentOutOfRangeException()
                 };
             }
             
@@ -273,6 +275,7 @@ internal class Day18 : DayBase
                 {
                     Direction.SouthEast => (new Coord(tempX + 1, tempY), Direction.East),
                     Direction.SouthWest => (new Coord(tempX - 1, tempY), Direction.West),
+                    _ => throw new ArgumentOutOfRangeException()
                 };
             }
 

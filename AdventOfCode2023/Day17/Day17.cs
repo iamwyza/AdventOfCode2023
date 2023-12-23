@@ -28,7 +28,6 @@ internal class Day17 : DayBase
     {
         PrintStart(1);
         await Init(1, false);
-        int bestHeat = int.MaxValue;
 
         var overlayGrid = _map.CopyGrid((_, input) => false);
 
@@ -77,8 +76,6 @@ internal class Day17 : DayBase
     {
         PrintStart(2);
         await Init(2, false);
-
-        int bestHeat = int.MaxValue;
 
         var overlayGrid = _map.CopyGrid((_, input) => Direction.None);
 

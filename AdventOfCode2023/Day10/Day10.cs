@@ -9,12 +9,12 @@ internal class Day10 : DayBase
     public Day10()
     {
         Ready = true;
+        _map = new Grid<(Direction direction, bool isConnected)>();
     }
 
     private Grid<(Direction direction, bool isConnected)> _map;
     private Coord _startCoord = new Coord();
 
-    [MemberNotNull(nameof(_map))]
     private async Task Init(int part, bool useTestData)
     {
         _map = new Grid<(Direction direction, bool isConnected)>();
@@ -37,6 +37,7 @@ internal class Day10 : DayBase
                     Direction.SouthEast => 'F',
                     Direction.None => ' ',
                     Direction.Special => 'S',
+                    _ => throw new ArgumentOutOfRangeException()
                 }
                 , input.isConnected ? Color.Green : Color.Default
                 , null);
@@ -206,6 +207,7 @@ internal class Day10 : DayBase
                         Direction.SouthEast => 'F',
                         Direction.None => '.',
                         Direction.Special => 'S',
+                        _ => throw new ArgumentOutOfRangeException()
                     }
                     , input.isConnected ? Color.Green : Color.Default
                     , null);
@@ -406,6 +408,7 @@ internal class Day10 : DayBase
                 {
                     Direction.SouthEast => (new Coord(tempX + 1, tempY), Direction.East),
                     Direction.SouthWest => (new Coord(tempX - 1, tempY), Direction.West),
+                    _ => throw new ArgumentOutOfRangeException()
                 };
             }
 

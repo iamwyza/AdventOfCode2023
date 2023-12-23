@@ -120,15 +120,15 @@ internal class Day15 : DayBase
 
         AnsiConsole.MarkupLineInterpolated($"Total Focusing Power: [green]{total}[/]");
 
-        void PrintBoxes()
-        {
-            foreach (var box in boxes.OrderBy(x => x.Key))
-            {
-                if (box.Value.Count > 0)
-                {
-                    AnsiConsole.MarkupLineInterpolated($"Box [yellow]{box.Key}[/]: {string.Join(' ', box.Value.Select(y => "[" + y.label + " " + y.value + "]"))}");
-                }
-            }
-        }
+        //void PrintBoxes()
+        //{
+        //    foreach (var box in boxes.OrderBy(x => x.Key))
+        //    {
+        //        if (box.Value.Count > 0)
+        //        {
+        //            AnsiConsole.MarkupLineInterpolated($"Box [yellow]{box.Key}[/]: {string.Join(' ', box.Value.Select(y => "[" + y.label + " " + y.value + "]"))}");
+        //        }
+        //    }
+        //}
     }
 }
