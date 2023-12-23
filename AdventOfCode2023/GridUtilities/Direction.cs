@@ -3,7 +3,7 @@
 namespace AdventOfCode2023.GridUtilities;
 
 [Flags]
-internal enum Direction : int
+public enum Direction : int
 {
     None = 0,
     Special = 1,
@@ -53,6 +53,7 @@ internal static class DirectionExtensions
 
             throw new Exception($"Attempted to move from {from} to {to}");
     }
+
 
     public static Direction GetDirection(int fromX, int fromY, int toX, int toY)
     {

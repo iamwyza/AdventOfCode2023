@@ -77,24 +77,8 @@ internal class Day18 : DayBase
 
             for (ulong i = 1; i <= amount; i++)
             {
-                tempCoord = new Coord(currentCoord.X, currentCoord.Y);
-
-                switch (direction)
-                {
-                    case Direction.North:
-                        tempCoord.Y -= (int)i;
-                        break;
-                    case Direction.East:
-                        tempCoord.X += (int)i;
-                        break;
-                    case Direction.South:
-                        tempCoord.Y += (int)i;
-                        break;
-                    case Direction.West:
-                        tempCoord.X -= (int)i;
-                        break;
-                }
-
+                tempCoord = new Coord(currentCoord.X, currentCoord.Y).Move(direction);
+               
                 _map[tempCoord] = (direction, true);
             }
 

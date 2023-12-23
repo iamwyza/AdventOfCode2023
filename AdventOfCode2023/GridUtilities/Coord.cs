@@ -1,20 +1,33 @@
 ﻿namespace AdventOfCode2023.GridUtilities;
 // ReSharper disable once InconsistentNaming
-internal struct Coord : IEqualityComparer<Coord>
+internal readonly struct Coord : IEqualityComparer<Coord>, IEquatable<Coord>
 {
-    public int X;
 
-    public int Y;
+    private readonly uint _value;
+
+    public int X => (int)(_value & 0xffff);
+
+    public int Y => (int)(_value >> 16);
+
+    public uint RawValue => _value;
 
     public Coord()
     {
-        X = 0; Y = 0;
+        _value = 0;
+    }
+
+    public Coord(uint value)
+    {
+        _value = value;
     }
 
     public Coord(int x, int y)
     {
-        X = x;
-        Y = y;
+        //ArgumentOutOfRangeException.ThrowIfNegative(x);
+        //ArgumentOutOfRangeException.ThrowIfNegative(y);
+        //ArgumentOutOfRangeException.ThrowIfGreaterThan(x, 1 << 16);
+        //ArgumentOutOfRangeException.ThrowIfGreaterThan(y, 1 << 16);
+        _value = (uint)y << 16 | (uint)x;
     }
 
     public static bool operator ==(Coord left, Coord right)
@@ -27,36 +40,49 @@ internal struct Coord : IEqualityComparer<Coord>
         return left.X != right.X || left.Y != right.Y;
     }
 
-    public override string ToString()
+    public readonly override string ToString()
     {
         return string.Format($"{X},{Y}");
     }
 
-    public bool Equals(Coord x, Coord y)
+    public readonly bool Equals(Coord x, Coord y)
     {
         return x.X == y.X && x.Y == y.Y;
     }
 
-    public int GetHashCode(Coord obj)
+    public readonly int GetHashCode(Coord obj)
     {
         return HashCode.Combine(obj.X, obj.Y);
     }
 
-   
+
+    public bool Equals(Coord other)
+    {
+        return _value == other._value;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Coord other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return _value.GetHashCode();
+    }
 }
 
 internal static class CoordExtensions
 {
-    public static long ToLookup(this Coord coord)
+    public static Coord Move(this Coord coord, Direction direction)
     {
-        return ((1 + coord.X) << 8) + ((1 + coord.Y) << 16);
-    }
-
-    public static (int x, int y) FromLookup(this long lookupValue)
-    {
-        const int xMask = 0b_11111111;
-        const int yMask = 0b_11111111_00000000;
-
-        return ((int)(1-(lookupValue & xMask)),(int)(1-((lookupValue & yMask) >> 8)));
+        return direction switch
+        {
+            Direction.North => new Coord(coord.X, coord.Y - 1),
+            Direction.East => new Coord(coord.X + 1, coord.Y),
+            Direction.South => new Coord(coord.X, coord.Y + 1),
+            Direction.West => new Coord(coord.X - 1, coord.Y),
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+        };
     }
 }

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace AdventOfCode2023.GridUtilities;
 
-internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : IComparable
+internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> //where T : IComparable
 {
 
     public T this[Coord index]
@@ -178,7 +178,7 @@ internal class Grid<T> : IEnumerable<(Coord Coordinate, T Value)> where T : ICom
     }
 
     public Grid<TNewGridType> CopyGrid<TNewGridType>(Func<Coord, T, TNewGridType>? converter = null)
-        where TNewGridType : IComparable
+        //where TNewGridType : IComparable
     {
         var newGrid = new Grid<TNewGridType>(Bounds.minX, Bounds.minY, Bounds.maxX, Bounds.maxY);
 
