@@ -30,4 +30,13 @@ public static class MathUtils
 
         return a | b;
     }
+
+    public static long Factorial(long f)
+    {
+        if (f == 0)
+            return 1L;
+        else
+            return f * Factorial(f - 1);
+    }
+
 }
