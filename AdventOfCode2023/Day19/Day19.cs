@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Xml.XPath;
-using AdventOfCode2023.GridUtilities;
-using Spectre.Console.Rendering;
+﻿using Spectre.Console.Rendering;
 
 namespace AdventOfCode2023.Day19;
 internal class Day19 : DayBase
